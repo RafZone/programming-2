@@ -72,7 +72,4 @@ defmodule Splay do
         ...
         {:splay, value, {:node, pk, pv, {:node, gk, gv, a, b}, c}, d}
     end
-
-
-
 end
