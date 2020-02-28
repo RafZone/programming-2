@@ -105,7 +105,6 @@ defmodule Huff do
     # def code(_, [], charcode ) do charcode end
     def code(a, a, charcode)  do [0|charcode] end #left of root, first element in tree
     def code(a, b,_) when is_integer(a) and is_integer(b) do :no end
-    
     def code(a, {a, _}, charcode) do [0|charcode] end
     def code(a, {_, a}, charcode) do [1|charcode] end
     def code(a, {left, right}, charcode) do
@@ -113,9 +112,9 @@ defmodule Huff do
         #tree= {102, {{99, 100}, {{97, 98}, 101}}}  
          #when done table= [{97, [1, 1,0,0]}, {98, [1, 1,0,1]}, {99, [1,0,0]}, {100, [1,0,1]}, {101, [1, 1, 1]},
         #{102, [0]}]
-        case code(a, left , charcode) do
+        case code(a, left , [0|charcode]) do
             :no -> code(a, right, [1|charcode])
-            _ -> [0|charcode]
+            _ -> code(a, left , [0|charcode])
         end
     end
 
