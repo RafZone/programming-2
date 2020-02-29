@@ -58,42 +58,67 @@ defmodule Huff do
         end
         
     end
-     def huffman([h|t]) do
-       huffman(t, [h])
-    end
-    def huffman([], tree) do tree end
-    def huffman([h1|t1], [h2|t2] = tree) do
-        # minOrder=minPQ(t, [h])
-        # [minh|mint]=minOrder
-        # huffman(t, [maketree(minh, mint)| tree])
-        #maketree=[{{c1, c2}, f1 + f2}|sorted_tail]
-        # sorted=minPQ(t, [h])
-        # [hsorted|tsorted]=sorted
-        # huffman(maketree(hsorted, tsorted))
-        {c1, f1}=h1
-        {c2, f2}=h2
-
-        cond do
-            f1 < f2 -> huffman(t1, minPQ(t2, [maketree(h1, h2)]))
-            true  -> huffman(t1, sorted=minPQ(t2, [maketree(h2, h1)]))
-        end
+    def huffman([h|[]]) do h end
+    def huffman([h|t]) do
+        sorted = minPQ( t , [h])
+        [h1sorted,h2sorted|tsorted] = sorted
+        huffman([maketree(h1sorted, h2sorted)|tsorted])
     end
     def maketree({c1, f1}, []) do
         {c1, f1}
     end
+    # def maketree({{c00, c01}, f},{{c1, c2},  f2}) do
+    #     {{c00, c01, f},{c1, c2, f2}, f+f2}
+    # end
     def maketree({c1, f1}, {c2, f2}) do
-        {{c1, c2}, f1 + f2}
-    end
-    def testmin() do
-        list=freq('this is something that we should encode')
-        huffman(list)
+        if f1 < f2 do 
+            {{c1, c2}, f1 + f2}
+        else 
+            {{c2, c1}, f1 + f2}
+        end
         
     end
+    
+    
+    def testmin() do
+        list=freq('aaaaabbbbbbbbbccccccccccccdddddddddddddeeeeeeeeeeeeeeeefffffffffffffffffffffffffffffffffffffffffffff')
+        encode_table(huffman(list), list)
+        #[{{101=e, {100=d, {99=c, {97=a, 98=b}}}}, 55}]
+        #[{a, b, 14}, {c, d, }]
+    end
 
 
-    # def encode_table(tree) do
-    # # To implement...
-    # end
+    def encode_table(tree, list) do
+        #list = [{a, 5}, {b, 9}, {c,12}...]
+        #{{102, {{99, 100}, {{97, 98}, 101}}}, 100} = tree
+        chars=char(list, []) #1. list of chars (table)
+        
+        #2. go through path of tree and encode table
+        codes=traverse(elem(tree, 0), chars, []) #list of codes for each char
+
+    end
+    def traverse(_ , [], codelist) do codelist end
+    def traverse(tree ,[lh|lt], codelist) do
+        traverse(tree, lt, [{lh, code(lh, tree, [])}|codelist])
+    end
+    
+    # def code(_, [], charcode ) do charcode end
+    def code(a, {a , _}, charcode)  do [0|charcode] end #left of root, first element in tree
+    def code(a, b,_) when is_integer(a) and is_integer(b) do :no end
+    def code(a, a, charcode) do charcode end
+    def code(a, {left, right}, charcode) do 
+        
+        case code(a, left ,[0|charcode]) do
+            :no -> code(a, right, [1|charcode])
+            _ -> charcode
+        end
+    end
+
+    def char([], newlist) do newlist end
+    def char([h|t], newlist) do
+        {element, _} = h
+        char(t, [element|newlist])
+    end
     # def decode_table(tree) do #.... 
     
     # end
@@ -103,6 +128,8 @@ defmodule Huff do
     # def decode(seq, tree) do
     #     # To implement...
     # end
+    
 
 
 end
+ 
