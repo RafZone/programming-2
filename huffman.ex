@@ -89,8 +89,8 @@ defmodule Huff do
 
 
     def encode_table(tree, list) do
-        #list = [{a, 5}, {b, 9}, {c,12}...]
-        #{{102, {{99, 100}, {{97, 98}, 101}}}, 100} = tree
+       
+        
         chars=char(list, []) #1. list of chars (table)
         
         #2. go through path of tree and encode table
@@ -99,18 +99,22 @@ defmodule Huff do
     end
     def traverse(_ , [], codelist) do codelist end
     def traverse(tree ,[lh|lt], codelist) do
-        traverse(tree, lt, [{lh, code(lh, tree, [])}|codelist])
+        traverse(tree, lt, [{lh, Enum.reverse(code(lh, tree, []))}|codelist])
     end
     
     # def code(_, [], charcode ) do charcode end
-    def code(a, {a , _}, charcode)  do [0|charcode] end #left of root, first element in tree
+    def code(a, a, charcode)  do [0|charcode] end #left of root, first element in tree
     def code(a, b,_) when is_integer(a) and is_integer(b) do :no end
-    def code(a, a, charcode) do charcode end
-    def code(a, {left, right}, charcode) do 
-        
-        case code(a, left ,[0|charcode]) do
+    def code(a, {a, _}, charcode) do [0|charcode] end
+    def code(a, {_, a}, charcode) do [1|charcode] end
+    def code(a, {left, right}, charcode) do
+        #list = [{97, 5}, {98, 9}, {99, 12}, {100, 13}, {101, 16}, {102, 45}]
+        #tree= {102, {{99, 100}, {{97, 98}, 101}}}  
+         #when done table= [{97, [1, 1,0,0]}, {98, [1, 1,0,1]}, {99, [1,0,0]}, {100, [1,0,1]}, {101, [1, 1, 1]},
+        #{102, [0]}]
+        case code(a, left , [0|charcode]) do
             :no -> code(a, right, [1|charcode])
-            _ -> charcode
+            _ -> code(a, left , [0|charcode])
         end
     end
 
@@ -132,4 +136,3 @@ defmodule Huff do
 
 
 end
- 
