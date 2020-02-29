@@ -81,16 +81,17 @@ defmodule Huff do
     
     
     def testmin() do
-        list=freq('aaaaabbbbbbbbbccccccccccccdddddddddddddeeeeeeeeeeeeeeeefffffffffffffffffffffffffffffffffffffffffffff')
-        encode_table(huffman(list), list)
+    
+        list=freq(sample())
+        table=encode_table(huffman(list), list)
+        seq=encode(text(), table, [])
+        decode(seq, table)
         #[{{101=e, {100=d, {99=c, {97=a, 98=b}}}}, 55}]
         #[{a, b, 14}, {c, d, }]
     end
 
 
     def encode_table(tree, list) do
-       
-        
         chars=char(list, []) #1. list of chars (table)
         
         #2. go through path of tree and encode table
@@ -109,8 +110,8 @@ defmodule Huff do
     def code(a, {_, a}, charcode) do [1|charcode] end
     def code(a, {left, right}, charcode) do
         #list = [{97, 5}, {98, 9}, {99, 12}, {100, 13}, {101, 16}, {102, 45}]
-        #tree= {102, {{99, 100}, {{97, 98}, 101}}}  
-         #when done table= [{97, [1, 1,0,0]}, {98, [1, 1,0,1]}, {99, [1,0,0]}, {100, [1,0,1]}, {101, [1, 1, 1]},
+        #tree= {102, {{99, 100}, {{97, 98}, 101}}}
+        #when done table= [{97, [1, 1,0,0]}, {98, [1, 1,0,1]}, {99, [1,0,0]}, {100, [1,0,1]}, {101, [1, 1, 1]},
         #{102, [0]}]
         case code(a, left , [0|charcode]) do
             :no -> code(a, right, [1|charcode])
@@ -123,16 +124,62 @@ defmodule Huff do
         {element, _} = h
         char(t, [element|newlist])
     end
+    def encode([], table, seq) do List.flatten(Enum.reverse(seq)) end
+    def encode(text, table, seq) do
+        #1. ta in text (the short charlist) som ska encodas till en sekvens av 1:or och 0:or
+        #2. sök igenom tabllen och encoda
+        [h|t]=text
+        encode(t, table, [findchar(h, table)|seq])
+    end
+    def findchar(a, []) do
+        :no
+    end
+    def findchar(a, [h|t]) do
+        {c, code}=h
+        cond do
+            a == c -> code
+            true -> findchar(a, t)
+        end
+    end
+    def decode([], _) do
+        []
+    end
+    def decode(seq, table) do
+        {char, rest} = decode_char(seq, 1, table)
+        [char | decode(rest, table)]
+    end
+    def decode_char(seq, n, table) do
+        {code, rest} = Enum.split(seq, n)
+        case List.keyfind(table, code, 1) do
+            {a, charcode}  -> {a, rest}
+            nil -> decode_char(seq, n + 1, table)
+        #     nil ->
+        # decode_char(..., ..., table)
+        end
+    end
     # def decode_table(tree) do #.... 
     
     # end
-    # def encode(text, table) do
-    #     # To implement...
-    # end
+    
     # def decode(seq, tree) do
     #     # To implement...
     # end
-    
-
+#text= [{97, [1, 1,0,0]}, {98, [1, 1,0,1]}, {99, [1,0,0]}, {100, [1,0,1]}, {101, [1, 1, 1]},
+        #{102, [0]}] 
+# [ this is sample
+#   {116, [1, 1, 0, 0]},
+#   {104, [1, 0, 1, 0, 1]},
+#   {101, [1, 1, 1, 0]},
+#   {32, [0, 1]},
+#   {113, [1, 0, 0, 0, 0, 1, 0]},
+#   {117, [1, 0, 1, 1, 0]},
+#   {97, [1, 1, 1, 1, 1]},
+#   {122, [1, 0, 0, 0, 1, 1, 1, 1]},
+#   {121, [1, 1, 0, 1, 0, 0]},
+#   {100, [1, 0, 0, 0, 0, 0]},
+#   {103, [1, 0, 0, 0, 1, 1, 0]},
+#   {10, [1, 0, 0, 0, 1, 0]}
+# ]
+# 'aaaaabbbbbbbbbccccccccccccdddddddddddddeeeeeeeeeeeeeeeefffffffffffffffffffffffffffffffffffffffffffff'
 
 end
