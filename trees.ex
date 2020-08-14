@@ -81,9 +81,9 @@ defmodule Trees do
     #delete(hib(right))
     def delete(e, {:node, e, left, right}) do
         x=hib(right)
-        m = {:node, x, left, delete(x, right)}
+        m = {:node, x, left, t = delete(x, right)}
         cond do
-            m ==:nil -> {:leaf, e}
+            left ==:nil and t == :nil -> x
             true -> m     
         end
     end
